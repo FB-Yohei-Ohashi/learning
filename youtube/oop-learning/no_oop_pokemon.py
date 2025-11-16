@@ -29,20 +29,20 @@ def check_fainted(hp):
 
 
 def main():
-    pikachu = {"name": "ピカチュウ", "hp": 20, "atk": [["10万ボルト", 10]]}
-    hitokage = {"name": "ヒトカゲ", "hp": 18, "atk": [["ひのこ", 5]]}
+    my_pokemon = {"name": "ピカチュウ", "hp": 20, "atk": [["10万ボルト", 10]]}
+    enemy_pokemon = {"name": "ヒトカゲ", "hp": 18, "atk": [["ひのこ", 5]]}
 
-    appearance(pikachu, hitokage)
+    appearance(my_pokemon, enemy_pokemon)
 
     while True:
-        enemy_hp = attack(pikachu, hitokage)
+        enemy_hp = attack(my_pokemon, enemy_pokemon)
         if check_fainted(enemy_hp):
-            print(f"{hitokage["name"]}はたおれた。{pikachu["name"]}のかち！")
+            print(f"{enemy_pokemon["name"]}はたおれた。{my_pokemon["name"]}のかち！")
             break
 
-        my_hp = attack(hitokage, pikachu)
+        my_hp = attack(enemy_pokemon, my_pokemon)
         if check_fainted(my_hp):
-            print(f"{pikachu["name"]}はたおれた。{hitokage["name"]}のかち！")
+            print(f"{my_pokemon["name"]}はたおれた。{enemy_pokemon["name"]}のかち！")
             break
 
 
