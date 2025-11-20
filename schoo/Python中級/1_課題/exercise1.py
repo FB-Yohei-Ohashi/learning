@@ -16,6 +16,10 @@ import os
 import pandas as pd
 from pathlib import Path
 
+# 定数定義
+SHEET_NAME = "202203"
+DIR_PATH = "schoo/Python中級/1_課題/input"
+
 
 def get_file_list(dir_path) -> list[str]:
     """フォルダの中にあるExcelファイル一覧を取得"""
@@ -30,17 +34,33 @@ def get_file_list(dir_path) -> list[str]:
     return xlsx_file_list
 
 
+def make_dfs(dir_path, xlsx_file_list):
+    """各Excelファイル内の特定シートのみ取得"""
+
+    df_list = []
+
+    for file in xlsx_file_list:
+        file_path = Path(dir_path) / file
+        df = pd.read_excel(file_path, sheet_name=SHEET_NAME)
+        df_list.append(df)
+
+    return df_list
+
+
 # メイン処理
 def main():
-    dir_path = "schoo/Python中級/1_課題/input"
-    xlsx_file_list = get_file_list(dir_path)
+    # フォルダの中にあるExcelファイル一覧を取得
+    xlsx_file_list = get_file_list(DIR_PATH)
     print(xlsx_file_list)
+
+    # 各Excelファイル内の特定シートのみ取得
+    df_list = make_dfs(DIR_PATH, xlsx_file_list)
+    print(len(df_list))
 
 
 if __name__ == "__main__":
     main()
 
 
-# 残タスク
-# 各Excelファイル内の特定シートのみ取得
+# TODO
 # 取得したシートを一つのExcelファイルにして保存
