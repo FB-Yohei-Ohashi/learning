@@ -57,11 +57,9 @@ def output_excel(
 def main() -> None:
     # フォルダの中にあるExcelファイル一覧を取得
     xlsx_file_list = get_file_list(INPUT_DIR_PATH)
-    print(xlsx_file_list)
 
     # 各Excelファイル内の特定シートのみ取得
     df_list = make_dfs(INPUT_DIR_PATH, xlsx_file_list)
-    print(len(df_list))
 
     # 取得したシートを一つのExcelファイルにして保存
     output_excel(df_list, xlsx_file_list, OUTPUT_FILE_PATH)
