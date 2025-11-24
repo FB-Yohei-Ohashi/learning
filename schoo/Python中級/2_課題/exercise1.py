@@ -53,6 +53,11 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
+import pandas as pd
+
+# 定数定義
+OUTPUT_DIR_PATH = "schoo/Python中級/2_課題/output"
+
 
 def btn_select_dir() -> None:
 
@@ -89,9 +94,54 @@ def get_file_list(dir_path: str | Path) -> list[str]:
     return xlsx_file_list
 
 
+def make_dfs(dir_path: str | Path, xlsx_file_list: list[str]) -> list[pd.DataFrame]:
+    """各Excelファイル内の特定シートのみ取得"""
+
+    df_list = []
+
+    for file in xlsx_file_list:
+        file_path = Path(dir_path) / file
+        df = pd.read_excel(file_path, sheet_name=sheet_name_input.get())
+        df_list.append(df)
+
+    return df_list
+
+
+def output_excel(
+    df_list: str | Path, xlsx_file_list: list[str], output_file_path: Path
+) -> None:
+    """取得したシートを一つのExcelファイルにして保存"""
+
+    output_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with pd.ExcelWriter(output_file_path) as writer:
+        for i, df in enumerate(df_list):
+            sheet_name = xlsx_file_list[i].replace(".xlsx", "")
+            df.to_excel(writer, sheet_name=sheet_name)
+
+
+def run():
+    # フォルダの中にあるExcelファイル一覧を取得
+    xlsx_file_list = get_file_list(text_input1.get())
+
+    # 各Excelファイル内の特定シートのみ取得
+    df_list = make_dfs(text_input1.get(), xlsx_file_list)
+
+    # 取得したシートを一つのExcelファイルにして保存
+    output_file_path = Path(OUTPUT_DIR_PATH) / output_file_name_input.get()
+    output_excel(df_list, xlsx_file_list, output_file_path)
+
+    # 完了通知
+    messagebox.showinfo("info", f"処理完了！\n保存先: \n{output_file_path}")
+
+def close_window():
+    """ウィンドウを閉じる関数"""
+    root.destroy()
+
+
 root = tk.Tk()
 root.title("Excelファイル統合ツール")
-root.geometry("600x400")
+root.geometry("700x400")
 root.lift()
 root.focus_force()
 
@@ -100,14 +150,14 @@ frame1 = ttk.Frame(root)
 frame1.grid(row=0, column=0, sticky="nw")
 
 text1_label = ttk.Label(frame1, text="フォルダ選択: ")
-text1_label.grid(row=0, column=0, sticky="nw")
+text1_label.grid(row=0, column=0, padx=10, pady=10, sticky="nw")
 
 text_input1 = tk.StringVar()
 entry1 = ttk.Entry(frame1, textvariable=text_input1, width=40)
-entry1.grid(row=0, column=1)
+entry1.grid(row=0, column=1, padx=10, pady=10, sticky="nw")
 
-button1 = ttk.Button(frame1, text="参照", command=btn_select_dir)
-button1.grid(row=0, column=2)
+select_button = ttk.Button(frame1, text="選択", command=btn_select_dir)
+select_button.grid(row=0, column=2, padx=10, pady=10, sticky="nw")
 
 # フォントを揃えるために、ウィジェットを更新してからフォントを取得
 root.update()
@@ -115,14 +165,33 @@ entry_font = entry1.cget("font")
 
 # 一覧表示
 text2_label = ttk.Label(frame1, text="ファイル一覧: ")
-text2_label.grid(row=1, column=0, sticky="nw")
+text2_label.grid(row=1, column=0, padx=10, pady=10, sticky="nw")
 
 text2 = tk.Text(frame1, width=40, height=10, wrap=tk.WORD, font=entry_font)
-text2.grid(row=1, column=1)
+text2.grid(row=1, column=1, padx=10, pady=10, sticky="nw")
 
 # 取得シートの設定
 text2_label = ttk.Label(frame1, text="取得シート設定: ")
-text2_label.grid(row=2, column=0, sticky="nw")
+text2_label.grid(row=2, column=0, padx=10, pady=10, sticky="nw")
+
+sheet_name_input = tk.StringVar()
+entry2 = ttk.Entry(frame1, textvariable=sheet_name_input, width=40)
+entry2.grid(row=2, column=1, padx=10, pady=10, sticky="nw")
+
+# 出力ファイル名の設定
+output_file_name_label = ttk.Label(frame1, text="出力ファイル名: ")
+output_file_name_label.grid(row=3, column=0, padx=10, pady=10, sticky="nw")
+
+output_file_name_input = tk.StringVar()
+entry3 = ttk.Entry(frame1, textvariable=output_file_name_input, width=40)
+entry3.grid(row=3, column=1, padx=10, pady=10, sticky="nw")
+
 # 保存
+run_button = ttk.Button(frame1, text="実行", command=run)
+run_button.grid(row=4, column=1, padx=10, pady=10, sticky="ne")
+
+close_button = ttk.Button(frame1, text="閉じる", command=close_window)
+close_button.grid(row=4, column=2, padx=10, pady=10, sticky="nw")
+
 
 root.mainloop()
