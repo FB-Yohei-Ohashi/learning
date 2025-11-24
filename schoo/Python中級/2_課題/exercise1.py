@@ -100,7 +100,7 @@ frame1 = ttk.Frame(root)
 frame1.grid(row=0, column=0, sticky="nw")
 
 text1_label = ttk.Label(frame1, text="フォルダ選択: ")
-text1_label.grid(row=0, column=0)
+text1_label.grid(row=0, column=0, sticky="nw")
 
 text_input1 = tk.StringVar()
 entry1 = ttk.Entry(frame1, textvariable=text_input1, width=40)
@@ -114,17 +114,15 @@ root.update()
 entry_font = entry1.cget("font")
 
 # 一覧表示
-frame2 = ttk.Frame(root)
-frame2.grid(row=1, column=0, sticky="nw")
+text2_label = ttk.Label(frame1, text="ファイル一覧: ")
+text2_label.grid(row=1, column=0, sticky="nw")
 
-text2_label = ttk.Label(frame2, text="ファイル一覧: ")
-text2_label.grid(row=0, column=0, sticky="nw")
-
-text2 = tk.Text(frame2, width=40, height=10, wrap=tk.WORD, font=entry_font)
-text2.grid(row=0, column=1)
+text2 = tk.Text(frame1, width=40, height=10, wrap=tk.WORD, font=entry_font)
+text2.grid(row=1, column=1)
 
 # 取得シートの設定
-
+text2_label = ttk.Label(frame1, text="取得シート設定: ")
+text2_label.grid(row=2, column=0, sticky="nw")
 # 保存
 
 root.mainloop()
