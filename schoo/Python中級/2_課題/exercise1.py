@@ -121,17 +121,49 @@ def get_file_list(dir_path: str | Path) -> list[str]:
         raise Exception(f"ファイル一覧の取得中にエラーが発生しました: {str(e)}") from e
 
 
-def make_dfs(dir_path: str | Path, xlsx_file_list: list[str]) -> list[pd.DataFrame]:
+def make_dfs(dir_path: str | Path, xlsx_file_list: list[str], sheet_name: str) -> list[pd.DataFrame]:
     """各Excelファイル内の特定シートのみ取得"""
 
     df_list = []
+    skipped_files = []  # スキップしたファイルを記録
 
     for file in xlsx_file_list:
         file_path = Path(dir_path) / file
-        df = pd.read_excel(file_path, sheet_name=sheet_name_input.get())
-        df_list.append(df)
+        try:
+            # Excelファイルを読み込む
+            df = pd.read_excel(file_path, sheet_name=sheet_name)
+            df_list.append(df)
+        
+        except FileNotFoundError:
+            # ファイルが見つからない場合
+            skipped_files.append(f"{file} (ファイルが見つかりません)")
+            continue
+        
+        except PermissionError:
+            # ファイルが開けない場合 (権限エラー)
+            skipped_files.append(f"{file} (アクセス権限がありません)")
+            continue
+        
+        except ValueError as e:
+            # シートが存在しない場合 (pandasはvalueErrorを発生させる)
+            if "Worksheet named" in str(e) or "Sheet named" in str(e):
+                skipped_files.append(f"{file} (シート '{sheet_name}' が存在しません)")
+            else:
+                skipped_files.append(f"{file} (読み込みエラー: {str(e)})")
+            continue
+        
+        except Exception as e:
+            # その他の予期しないエラー(ファイルは損など)
+            skipped_files.append(f"{file} (エラー: {str(e)})")
+            continue
+        
+    # スキップしたファイルがある場合は警告を返す情報として保持
+    # (後でGUIに表示するために、戻り値に含めるか、別の方法で通知)
+    if skipped_files:
+        # ここでは警告メッセージを返す(後でGUIに表示)
+        pass  # 後で実装
 
-    return df_list
+    return df_list, skipped_files  # スキップ情報も返す
 
 
 def output_excel(
@@ -152,7 +184,7 @@ def run():
     xlsx_file_list = get_file_list(text_input1.get())
 
     # 各Excelファイル内の特定シートのみ取得
-    df_list = make_dfs(text_input1.get(), xlsx_file_list)
+    df_list = make_dfs(text_input1.get(), xlsx_file_list, sheet_name_input.get())
 
     # 取得したシートを一つのExcelファイルにして保存
     output_file_path = Path(OUTPUT_DIR_PATH) / output_file_name_input.get()
