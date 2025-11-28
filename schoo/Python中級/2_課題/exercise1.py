@@ -48,6 +48,17 @@
 - ファイル一覧取得: os.listdir()やglobモジュールを使用
 """
 
+# TODO
+# - [] 入力値の検証
+#     - フォルダが選択されていない場合
+#     - シート名が入力されていない場合
+#     - 出力ファイル名が入力されていない場合
+# - [] ファイル操作のエラーハンドリング
+#     - ファイルが開けない場合（権限エラー、ファイル破損など）
+#     - シートが存在しない場合（要件で要求されている）
+#     - ディレクトリが作成できない場合
+
+
 import os
 import tkinter as tk
 from pathlib import Path
@@ -60,7 +71,10 @@ OUTPUT_DIR_PATH = "schoo/Python中級/2_課題/output"
 
 
 def btn_select_dir() -> None:
-
+    """ディレクトリの選択
+    
+    フォルダを選択するためのボタンがクリックされた時に呼び出されます。
+    """
     base_dir = os.path.abspath(os.path.dirname(__file__))
     dir_path = filedialog.askdirectory(initialdir=base_dir)
 
@@ -82,16 +96,29 @@ def btn_select_dir() -> None:
 
 def get_file_list(dir_path: str | Path) -> list[str]:
     """フォルダの中にあるExcelファイル一覧を取得"""
+    try:
+        input_path = Path(dir_path)
+        # ディレクトリが存在するか確認
+        if not input_path.exists():
+            raise FileNotFoundError(f"指定されたフォルダが存在しません: {dir_path}")
+        if not input_path.is_dir():
+            raise NotADirectoryError(f"指定されたパスはフォルダではありません: {dir_path}")
+        
+        # ファイル名を取得する
+        file_list = [
+            f for f in os.listdir(input_path) if os.path.isfile(os.path.join(input_path, f))
+        ]
+        # 一応拡張子がxlsxだけに絞る
+        xlsx_file_list = [xf for xf in file_list if xf.endswith(".xlsx")]
 
-    input_path = Path(dir_path)
-    # ファイル名を取得する
-    file_list = [
-        f for f in os.listdir(input_path) if os.path.isfile(os.path.join(input_path, f))
-    ]
-    # 一応拡張子がxlsxだけに絞る
-    xlsx_file_list = [xf for xf in file_list if xf.endswith(".xlsx") == True]
-
-    return xlsx_file_list
+        return xlsx_file_list
+    
+    except PermissionError as e:
+        # アクセス権限がない場合
+        raise PermissionError(f"フォルダへのアクセス権限がありません: {dir_path}") from e
+    except Exception as e:
+        # その他の予期しないエラー
+        raise Exception(f"ファイル一覧の取得中にエラーが発生しました: {str(e)}") from e
 
 
 def make_dfs(dir_path: str | Path, xlsx_file_list: list[str]) -> list[pd.DataFrame]:
